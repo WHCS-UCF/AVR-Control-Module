@@ -1,0 +1,32 @@
+/* PORT B
+   [0] Status LED (OUT)
+   [1] NRF Chip Enable (OUT)
+   [2] NRF Chip Select (SPI_SS)
+   [3] NRF MOSI (SPI_MOSI)
+   [4] NRF MISO (SPI_MISO)
+   [5] NRF SCK (SPI_SCK)
+*/
+
+PINOUT(STATUS_LED, B, 0);
+PINOUT(NRF_CE,     B, 1);
+PINOUT(NRF_CS,     B, 2);
+PINOUT(NRF_MOSI,   B, 3);
+PINOUT(NRF_MISO,   B, 4);
+PINOUT(NRF_SCK,    B, 5);
+
+/* PORT C (ADC)
+   [0] Temperature Sensor (IN analog)
+   [1] DC SS Relay (strike) (OUT)
+   [2] AC SS Relay (peripheral) (OUT)
+*/
+
+PINOUT(ADC, C, 0b11111111)
+PINOUT(TEMP_SENSOR, C, 0);
+PINOUT(DC_RELAY,    C, 1);
+PINOUT(AC_RELAY,    C, 2);
+
+/* PORT D
+   [3] NRF IRQ (in)
+*/
+
+PINOUT(NRF_IRQ, D, 3)

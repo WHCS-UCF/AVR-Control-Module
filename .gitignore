@@ -1,0 +1,4 @@
+control-module.hex
+control-module.elf
+build/
+*.swp
