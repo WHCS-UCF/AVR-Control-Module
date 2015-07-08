@@ -27,7 +27,7 @@ int uart_getchar(FILE *stream) {
 }
 
 RF24 rf24(NRF_CE_NUMBER, NRF_CS_NUMBER); // pins on PORTB ONLY
-Radio radio(&rf24, 0x41);
+Radio radio(&rf24, 0x0);
 
 #define MAIN_LOOP_WARNING 300 // 300ms maximum main loop time until warning
 static FILE mystdout;
@@ -67,8 +67,10 @@ int main()
 
   radio_pkt pkt;
 
+  PIN_MODE_OUTPUT(DC_RELAY);
+
   rf24.begin();
-  rf24.openReadingPipe(1, 0xabcdefab00LL);
+  rf24.openReadingPipe(1, 0xE8E8F0F000LL | 0x00);
   rf24.startListening();
   rf24.printDetails();
 
@@ -81,13 +83,20 @@ int main()
     //radio.sendTo(0xe5, &pkt);
     if(rf24.available())
     {
-      rf24.read(pkt.data, 1);
-      printf("Got data %02x\n", pkt.data[0]);
+      size_t amt = rf24.read(pkt.data, 32);
 
-      if(pkt.data[0] == 'O')
-        printf("STRIKE ENGAGED\n");
-      else
-        printf("STRIKE DISENGAGED\n");
+      printf("Got data %02x amt %u\n", pkt.data[1], amt);
+
+      if(pkt.data[1] == 'O') {
+        printf("ON\n");
+        PIN_HIGH(STATUS_LED);
+        PIN_HIGH(DC_RELAY);
+      }
+      else {
+        printf("OFF\n");
+        PIN_LOW(STATUS_LED);
+        PIN_LOW(DC_RELAY);
+      }
     }
 
     time_t delta = millis() - mainStart;
