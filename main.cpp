@@ -87,7 +87,9 @@ int main()
 {
   // initialize timing (millis()) as the first call 
   timing_init();
+#ifdef MAKE_TEMP
   WHCSADC::init(); // this sets the ADC port as all inputs
+#endif
   initUart();
 
   // setup STDIN/STDOUT for printf
@@ -103,6 +105,15 @@ int main()
   // show that we're powered up
   PIN_MODE_OUTPUT(STATUS_LED);
   PIN_HIGH(STATUS_LED);
+
+  // init the control module ports
+#if defined(MAKE_LIGHT) || defined(MAKE_OUTLET)
+  printf_P(PSTR("AC relay initialized\n"));
+  PIN_MODE_OUTPUT(AC_RELAY);
+#elif defined(MAKE_DOOR)
+  printf_P(PSTR("DC relay initialized\n"));
+  PIN_MODE_OUTPUT(DC_RELAY);
+#endif
 
   radio.begin();
   //radio.enableInterrupt();
@@ -167,12 +178,12 @@ int main()
               PIN_HIGH(DC_RELAY);
             else
               PIN_LOW(DC_RELAY);
-#elif MAKE_LIGHT || MAKE_OUTLET
+#elif defined(MAKE_LIGHT) || defined(MAKE_OUTLET)
             if(pkt.data[0])
               PIN_HIGH(AC_RELAY);
             else
               PIN_LOW(AC_RELAY);
-#elif MAKE_TEMP
+#elif defined(MAKE_TEMP)
             printf_P(PSTR("Invalid message for control module type\n"));
 #endif
           }
@@ -183,9 +194,9 @@ int main()
         {
 #ifdef MAKE_DOOR
           uint8_t result = PIN_READ(DC_RELAY);
-#elif MAKE_LIGHT || MAKE_OUTLET
+#elif defined(MAKE_LIGHT) || defined(MAKE_OUTLET)
           uint8_t result = PIN_READ(AC_RELAY);
-#elif MAKE_TEMP
+#elif defined(MAKE_TEMP)
           int8_t result = tempAvg;
           printf("Temp %d deg F\n", result);
 #endif
