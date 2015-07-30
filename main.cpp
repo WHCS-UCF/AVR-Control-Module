@@ -110,9 +110,11 @@ int main()
 #if defined(MAKE_LIGHT) || defined(MAKE_OUTLET)
   printf_P(PSTR("AC relay initialized\n"));
   PIN_MODE_OUTPUT(AC_RELAY);
+  PIN_LOW(AC_RELAY);
 #elif defined(MAKE_DOOR)
   printf_P(PSTR("DC relay initialized\n"));
   PIN_MODE_OUTPUT(DC_RELAY);
+  PIN_LOW(DC_RELAY);
 #endif
 
   radio.begin();
@@ -129,6 +131,9 @@ int main()
   time_t maxLoopTime = 0;
   Timer loopTimeReset;
   loopTimeReset.once(5000);
+
+  // module state
+  uint8_t currentState = 0;
 
 #ifdef MAKE_TEMP
 #define NUM_TEMP_SAMPLES 10
@@ -175,14 +180,26 @@ int main()
 
 #ifdef MAKE_DOOR
             if(pkt.data[0])
+            {
               PIN_HIGH(DC_RELAY);
+              currentState = 1;
+            }
             else
+            {
               PIN_LOW(DC_RELAY);
+              currentState = 0;
+            }
 #elif defined(MAKE_LIGHT) || defined(MAKE_OUTLET)
             if(pkt.data[0])
+            {
               PIN_HIGH(AC_RELAY);
+              currentState = 1;
+            }
             else
+            {
               PIN_LOW(AC_RELAY);
+              currentState = 0;
+            }
 #elif defined(MAKE_TEMP)
             printf_P(PSTR("Invalid message for control module type\n"));
 #endif
@@ -193,9 +210,9 @@ int main()
         case RADIO_OP_GET_STATUS:
         {
 #ifdef MAKE_DOOR
-          uint8_t result = PIN_READ(DC_RELAY);
+          uint8_t result = currentState;
 #elif defined(MAKE_LIGHT) || defined(MAKE_OUTLET)
-          uint8_t result = PIN_READ(AC_RELAY);
+          uint8_t result = currentState;
 #elif defined(MAKE_TEMP)
           int8_t result = tempAvg;
           printf("Temp %d deg F\n", result);
